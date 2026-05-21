@@ -206,10 +206,8 @@ export async function createFeedbackPopup() {
                 }
                 // switching from downvote — retract it
                 if (vote === 'down') retractStoredFeedback(visibilityKey);
-                if (!_impactStats) {
-                    const { reviewID } = getReviewMeta();
-                    fetchImpactStats(reviewID, data => setImpactStats(data));
-                }
+                const { reviewID: rid } = getReviewMeta();
+                fetchImpactStats(rid, data => setImpactStats(data));
                 if (onVote) onVote(visibilityKey, 'up');
                 postFeedback();
                 cancelHoverClose();
@@ -238,10 +236,8 @@ export async function createFeedbackPopup() {
             cancelHoverClose();
             if (popupMode === 'click' || popupMode === 'submitted') return;
             if (type === 'up' && !popupVisible) {
-                if (!_impactStats) {
-                    const { reviewID } = getReviewMeta();
-                    fetchImpactStats(reviewID, data => setImpactStats(data));
-                }
+                const { reviewID } = getReviewMeta();
+                fetchImpactStats(reviewID, data => setImpactStats(data));
                 show('hover');
             }
         };
