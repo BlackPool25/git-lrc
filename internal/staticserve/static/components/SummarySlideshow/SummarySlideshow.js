@@ -704,6 +704,23 @@ export async function createSummarySlideshow() {
         const activeProgressTrackMarkerKey = getActiveProgressTrackMarkerKey(progressTrackItems, currentSlide);
         const chapterExplorerCards = buildChapterExplorerCards(progressTrackItems, currentSlide, activeProgressTrackItemKey, activeProgressTrackMarkerKey);
 
+        // ── slide feedback context ────────────────────────────────────────────
+        const slideCommentContent = isCompleteSlide
+            ? `[Complete] Finished all ${slides.length} slides`
+            : slide
+                ? `[${currentSlide + 1}/${slides.length}] ${slide.title ? slide.title + '\n\n' : ''}${slide.content || ''}`.trim()
+                : '';
+
+        const slideFilePath = slide?.meta?.filePath || undefined;
+
+        const slideAllSlidesData = JSON.stringify(
+            slides.map((s, i) => {
+                const entry = { n: i + 1, title: s.title || '', kind: s.kind || 'detail' };
+                if (s.meta?.filePath) entry.file = s.meta.filePath;
+                return entry;
+            })
+        );
+
         const handleClose = () => {
             clearAutoPlayTimers();
             setIsAutoPlay(false);
@@ -1044,6 +1061,9 @@ export async function createSummarySlideshow() {
                                 onVote=${handleSlideshowVote}
                                 visibilityKey="__slideshow__"
                                 sourceType="slideshow"
+                                commentContent=${slideCommentContent}
+                                filePath=${slideFilePath}
+                                codeExcerpt=${slideAllSlidesData}
                             />
                             <${FeedbackPopup}
                                 type="down"
@@ -1051,6 +1071,9 @@ export async function createSummarySlideshow() {
                                 onVote=${handleSlideshowVote}
                                 visibilityKey="__slideshow__"
                                 sourceType="slideshow"
+                                commentContent=${slideCommentContent}
+                                filePath=${slideFilePath}
+                                codeExcerpt=${slideAllSlidesData}
                             />
                             <button class="action-btn summary-slide-btn ${copied ? 'copied' : ''}" onClick=${handleCopy} title="Copy current slide (C)" aria-label="Copy current slide">
                                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
