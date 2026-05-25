@@ -90,7 +90,7 @@ use-livereview-backend:
 # Prompts for version bump type (patch/minor/major)
 bump:
 	@echo "📝 Bumping lrc version..."
-	@python scripts/lrc_build.py bump
+	@python3 scripts/lrc_build.py bump
 
 # Build and upload lrc to Backblaze B2
 release:
