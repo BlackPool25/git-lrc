@@ -8,7 +8,12 @@ import (
 	"strings"
 )
 
-const configFileName = ".lrc.toml"
+const (
+	configFileName     = ".lrc.toml"
+	lrcDataDirName     = ".lrc"
+	claudeDirName      = ".claude"
+	claudeSettingsName = "settings.json"
+)
 
 // ResolveHomeDir returns a stable absolute home directory path for this process.
 func ResolveHomeDir() (string, error) {
@@ -32,6 +37,51 @@ func ResolveConfigPath() (string, error) {
 		return "", err
 	}
 	return filepath.Join(homeDir, configFileName), nil
+}
+
+// ResolveLRCDataDir returns the canonical ~/.lrc data directory.
+func ResolveLRCDataDir() (string, error) {
+	homeDir, err := ResolveHomeDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(homeDir, lrcDataDirName), nil
+}
+
+// ResolveClaudeDir returns the canonical ~/.claude directory.
+func ResolveClaudeDir() (string, error) {
+	homeDir, err := ResolveHomeDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(homeDir, claudeDirName), nil
+}
+
+// ResolveClaudeSettingsPath returns the user-scoped Claude settings.json path.
+func ResolveClaudeSettingsPath() (string, error) {
+	claudeDir, err := ResolveClaudeDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(claudeDir, claudeSettingsName), nil
+}
+
+// ResolveClaudeManagedHooksDir returns the lrc-managed user-global Claude hooks directory.
+func ResolveClaudeManagedHooksDir() (string, error) {
+	lrcDir, err := ResolveLRCDataDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(lrcDir, "claude", "hooks"), nil
+}
+
+// ResolveClaudeLRCSkillPath returns the personal-global Claude skill path for /lrc.
+func ResolveClaudeLRCSkillPath() (string, error) {
+	claudeDir, err := ResolveClaudeDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(claudeDir, "skills", "lrc", "SKILL.md"), nil
 }
 
 func normalizeHomeForOS(goos, homeDir string) string {

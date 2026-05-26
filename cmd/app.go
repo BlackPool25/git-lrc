@@ -98,6 +98,10 @@ func BuildApp(version, buildTime, gitCommit, reviewMode string, baseFlags, debug
 						Usage: "Install global LiveReview hook dispatchers (uses core.hooksPath)",
 						Flags: []cli.Flag{
 							&cli.StringFlag{
+								Name:  "surface",
+								Usage: "hook surface to install: all, git, or claude",
+							},
+							&cli.StringFlag{
 								Name:  "path",
 								Usage: "custom hooksPath (defaults to core.hooksPath or ~/.git-hooks)",
 							},
@@ -112,6 +116,10 @@ func BuildApp(version, buildTime, gitCommit, reviewMode string, baseFlags, debug
 						Name:  "uninstall",
 						Usage: "Remove LiveReview hook dispatchers and managed scripts",
 						Flags: []cli.Flag{
+							&cli.StringFlag{
+								Name:  "surface",
+								Usage: "hook surface to uninstall: all, git, or claude",
+							},
 							&cli.BoolFlag{
 								Name:  "local",
 								Usage: "uninstall from the current repo hooks path",
@@ -124,18 +132,36 @@ func BuildApp(version, buildTime, gitCommit, reviewMode string, baseFlags, debug
 						Action: h.RunHooksUninstall,
 					},
 					{
-						Name:   "enable",
-						Usage:  "Enable LiveReview hooks for the current repository",
+						Name:  "enable",
+						Usage: "Enable LiveReview hooks for the current repository",
+						Flags: []cli.Flag{
+							&cli.StringFlag{
+								Name:  "surface",
+								Usage: "hook surface to target: all, git, or claude",
+							},
+						},
 						Action: h.RunHooksEnable,
 					},
 					{
-						Name:   "disable",
-						Usage:  "Disable LiveReview hooks for the current repository",
+						Name:  "disable",
+						Usage: "Disable LiveReview hooks for the current repository",
+						Flags: []cli.Flag{
+							&cli.StringFlag{
+								Name:  "surface",
+								Usage: "hook surface to target: all, git, or claude",
+							},
+						},
 						Action: h.RunHooksDisable,
 					},
 					{
-						Name:   "status",
-						Usage:  "Show LiveReview hook status for the current repository",
+						Name:  "status",
+						Usage: "Show LiveReview hook status for the current repository",
+						Flags: []cli.Flag{
+							&cli.StringFlag{
+								Name:  "surface",
+								Usage: "hook surface to target: all, git, or claude",
+							},
+						},
 						Action: h.RunHooksStatus,
 					},
 				},

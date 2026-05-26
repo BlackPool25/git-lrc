@@ -9,11 +9,12 @@ GIT_DIR="$(git rev-parse --git-dir 2>/dev/null || echo .git)"
 LRC_DIR="$GIT_DIR/lrc"
 ATTEST_DIR="$LRC_DIR/attestations"
 DISABLED_FILE="$LRC_DIR/disabled"
+DISABLED_GIT_FILE="$LRC_DIR/disabled-git"
 STATE_FILE="$GIT_DIR/livereview_state"
 LOCK_DIR="$GIT_DIR/livereview_state.lock"
 INITIAL_MSG_FILE="$GIT_DIR/livereview_initial_message.$$"
 
-if [ -f "$DISABLED_FILE" ]; then
+if [ -f "$DISABLED_FILE" ] || [ -f "$DISABLED_GIT_FILE" ]; then
 	exit 0
 fi
 

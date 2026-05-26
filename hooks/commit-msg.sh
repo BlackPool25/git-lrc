@@ -10,8 +10,9 @@ COMMIT_MSG_OVERRIDE="$GIT_DIR/__LRC_COMMIT_MESSAGE_FILE__"
 LRC_DIR="$GIT_DIR/lrc"
 ATTEST_DIR="$LRC_DIR/attestations"
 DISABLED_FILE="$LRC_DIR/disabled"
+DISABLED_GIT_FILE="$LRC_DIR/disabled-git"
 
-if [ -f "$DISABLED_FILE" ]; then
+if [ -f "$DISABLED_FILE" ] || [ -f "$DISABLED_GIT_FILE" ]; then
 	exit 0
 fi
 

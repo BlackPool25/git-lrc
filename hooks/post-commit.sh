@@ -8,11 +8,12 @@ PUSH_FLAG="$GIT_DIR/__LRC_PUSH_REQUEST_FILE__"
 LRC_DIR="$GIT_DIR/lrc"
 ATTEST_DIR="$LRC_DIR/attestations"
 DISABLED_FILE="$LRC_DIR/disabled"
+DISABLED_GIT_FILE="$LRC_DIR/disabled-git"
 UPSTREAM=""
 UPSTREAM_REMOTE=""
 UPSTREAM_BRANCH=""
 
-if [ -f "$DISABLED_FILE" ]; then
+if [ -f "$DISABLED_FILE" ] || [ -f "$DISABLED_GIT_FILE" ]; then
 	exit 0
 fi
 

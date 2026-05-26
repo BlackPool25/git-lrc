@@ -2,6 +2,7 @@ package storage
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 )
 
@@ -75,6 +76,17 @@ func RemoveHookScriptFile(path string) error {
 func RemoveRepoHooksDisabledMarker(path string) error {
 	if err := Remove(path); err != nil {
 		return fmt.Errorf("failed to remove hooks disabled marker %s: %w", path, err)
+	}
+	return nil
+}
+
+// RemoveRepoHooksStateMarker removes a repo-level hooks state marker file.
+func RemoveRepoHooksStateMarker(path string) error {
+	if err := os.Remove(path); err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return fmt.Errorf("failed to remove hooks state marker %s: %w", path, err)
 	}
 	return nil
 }

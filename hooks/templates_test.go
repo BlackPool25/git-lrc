@@ -30,6 +30,7 @@ func TestGeneratedHooksUseResolvedGitDirPaths(t *testing.T) {
 			contains: []string{
 				"GIT_DIR=\"$(git rev-parse --git-dir 2>/dev/null || echo .git)\"",
 				"LRC_DIR=\"$GIT_DIR/lrc\"",
+				"DISABLED_GIT_FILE=\"$LRC_DIR/disabled-git\"",
 				"ATTEST_FILE=\"$LRC_DIR/attestations/$TREE_HASH.json\"",
 			},
 			forbidden: []string{
@@ -42,6 +43,7 @@ func TestGeneratedHooksUseResolvedGitDirPaths(t *testing.T) {
 			hook: GeneratePrepareCommitMsgHook(cfg),
 			contains: []string{
 				"GIT_DIR=\"$(git rev-parse --git-dir 2>/dev/null || echo .git)\"",
+				"DISABLED_GIT_FILE=\"$LRC_DIR/disabled-git\"",
 				"STATE_FILE=\"$GIT_DIR/livereview_state\"",
 				"LOCK_DIR=\"$GIT_DIR/livereview_state.lock\"",
 				"INITIAL_MSG_FILE=\"$GIT_DIR/livereview_initial_message.$$\"",
@@ -58,6 +60,7 @@ func TestGeneratedHooksUseResolvedGitDirPaths(t *testing.T) {
 			hook: GenerateCommitMsgHook(cfg),
 			contains: []string{
 				"GIT_DIR=\"$(git rev-parse --git-dir 2>/dev/null || echo .git)\"",
+				"DISABLED_GIT_FILE=\"$LRC_DIR/disabled-git\"",
 				"COMMIT_MSG_OVERRIDE=\"$GIT_DIR/livereview_commit_message\"",
 				"STATE_FILE=\"$GIT_DIR/livereview_state\"",
 			},
@@ -72,6 +75,7 @@ func TestGeneratedHooksUseResolvedGitDirPaths(t *testing.T) {
 			hook: GeneratePostCommitHook(cfg),
 			contains: []string{
 				"GIT_DIR=\"$(git rev-parse --git-dir 2>/dev/null || echo .git)\"",
+				"DISABLED_GIT_FILE=\"$LRC_DIR/disabled-git\"",
 				"PUSH_FLAG=\"$GIT_DIR/livereview_push_request\"",
 				"LRC_DIR=\"$GIT_DIR/lrc\"",
 			},
@@ -87,10 +91,12 @@ func TestGeneratedHooksUseResolvedGitDirPaths(t *testing.T) {
 				"GIT_DIR=\"$(git rev-parse --git-dir 2>/dev/null || echo .git)\"",
 				"GIT_COMMON_DIR=\"$(git rev-parse --git-common-dir 2>/dev/null || echo \"$GIT_DIR\")\"",
 				"LRC_DISABLED_FILE=\"$GIT_DIR/lrc/disabled\"",
+				"LRC_DISABLED_GIT_FILE=\"$GIT_DIR/lrc/disabled-git\"",
 				"LOCAL_HOOK=\"$GIT_COMMON_DIR/hooks/pre-commit\"",
 			},
 			forbidden: []string{
 				"LRC_DISABLED_FILE=\".git/lrc/disabled\"",
+				"LRC_DISABLED_GIT_FILE=\".git/lrc/disabled-git\"",
 				"LOCAL_HOOK=\"$(git rev-parse --git-path hooks/pre-commit 2>/dev/null || echo .git/hooks/pre-commit)\"",
 				"LOCAL_HOOK=\".git/hooks/pre-commit\"",
 			},

@@ -7,7 +7,8 @@ __LRC_MARKER_BEGIN__
 GIT_DIR="$(git rev-parse --git-dir 2>/dev/null || echo .git)"
 LRC_DIR="$GIT_DIR/lrc"
 DISABLED_FILE="$LRC_DIR/disabled"
-if [ -f "$DISABLED_FILE" ]; then
+DISABLED_GIT_FILE="$LRC_DIR/disabled-git"
+if [ -f "$DISABLED_FILE" ] || [ -f "$DISABLED_GIT_FILE" ]; then
 	exit 0
 fi
 
