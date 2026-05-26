@@ -1,6 +1,6 @@
 # Storage Operations Status
 
-Last Reviewed: 2026-03-19
+Last Reviewed: 2026-05-26
 Audience: Engineering, Procurement, Security Vetting, CISO
 Scope: Local persistence and file system operations in the storage boundary
 
@@ -16,9 +16,8 @@ This document tracks storage-side operations in git-lrc as an auditable inventor
 - Highest-risk operation classes: credential file read/write, recursive deletion, permission changes, direct SQL execution wrappers.
 - Primary compensating controls already present: atomic writes for critical files, SQLite WAL mode and busy timeout, explicit chmod utility usage, typed wrapper functions and contextual error wrapping.
 - High-priority updates added in this review: mode-specific permission tests, backward-compatible schema version marker note, optional dry-run/logged branch delete API, optional confirmation-gated full delete API, review-session SQL mutation routing through ExecSQL, and pending-update integrity hash validation with legacy compatibility.
-- Current diff note: hook install reliability fix now handles wrapped file-not-found errors and normalizes hooksPath values before install/uninstall orchestration; no new storage operation APIs added in this increment.
-- Current diff note: uninstall shell source-line cleanup now preserves original LF/CRLF style and replaces string literals with named constants for maintainability.
-- Current diff note: RemoveFileIfExists now avoids stat-then-remove TOCTOU on non-dry-run path, shell-line splitting now respects detected line ending delimiter, and fish managed-marker string is constantized.
+- Current diff note: worktree hook-runtime and local hook-management fixes update hook/appcore/git path resolution only; no new storage operation APIs were added in this increment.
+- Current diff note: storage hook lifecycle evidence links were revalidated after the worktree hook-management update; inventory scope is unchanged.
 
 ## Severity Rubric
 
