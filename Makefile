@@ -1,4 +1,4 @@
-.PHONY: build build-win build-all build-local build-local-test run run-fake-review dev-ui bump release release-internal release-gh clean test testall test-pkg upload-secrets download-secrets security-govulncheck security-govulncheck-json security-osv security-triage security-gitleaks security-b2-audit security-b2-cleanup-plan security-b2-cleanup-apply security-publish-release-manifest security-secret-regression security-sbom security-sbom-cyclonedx security-sbom-spdx security-sbom-validate release-notes-init release-notes-check release-preflight use-local-backend use-livereview-backend
+.PHONY: build build-win build-all build-local build-local-test run run-fake-review dev-ui bump release release-internal release-gh clean test testall test-pkg upload-secrets download-secrets security-govulncheck security-govulncheck-json security-osv security-triage security-gitleaks security-b2-audit security-b2-cleanup-plan security-b2-cleanup-apply security-publish-release-manifest security-secret-regression security-sbom security-sbom-cyclonedx security-sbom-spdx security-sbom-validate release-notes-init release-notes-check release-preflight check-status-doc use-local-backend use-livereview-backend
 
 # Go parameters
 GOENV=env -u GOROOT
@@ -93,14 +93,14 @@ bump:
 	@python3 scripts/lrc_build.py bump
 
 # Build and upload lrc to Backblaze B2
-release:
+release: check-status-doc
 	@echo "🚀 Building and releasing lrc..."
 	@python scripts/lrc_build.py -v release
 	@echo "ℹ️  Optional GitHub release publish: make release-gh"
 	@echo "   Optional explicit override: make release-gh VERSION=$$(awk -F'"' '/const appVersion/{print $$2; exit}' main.go)"
 
 # Build and upload an internal release of lrc using the same storage layout.
-release-internal:
+release-internal: check-status-doc
 	@echo "🚀 Building and releasing internal lrc..."
 	@python scripts/lrc_build.py -v release --channel internal
 	@echo "ℹ️  Internal releases use a fixed pseudo-version and do not self-update"
@@ -317,8 +317,8 @@ release-notes-check:
 
 # Run all release checks before creating/publishing a GitHub release.
 # Usage: make release-preflight VERSION=v1.2.3
-release-preflight: release-notes-check
+release-preflight: release-notes-check check-status-doc
 	@echo "✅ Release preflight passed for $(VERSION)"
 
 check-status-doc:
-	bash scripts/check-status-doc-links.sh
+	@bash scripts/check-status-doc-links.sh
