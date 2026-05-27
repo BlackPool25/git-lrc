@@ -22,6 +22,7 @@ RELEASE_IMAGE_DIR=$(RELEASE_NOTES_DIR)/img
 RELEASE_IMAGE_GUIDE=README.md
 RELEASE_NOTES_TEMPLATE=$(RELEASE_NOTES_DIR)/_template.md
 RELEASE_GH_SCRIPT=scripts/release_gh.py
+RELEASE_NOTES_BRANCH=main
 
 # Build lrc for the current platform
 build:
@@ -113,9 +114,10 @@ release: check-status-doc
 	if [ "$$ans" = "y" ] || [ "$$ans" = "Y" ]; then \
 		$(MAKE) release-notes-init VERSION="$$version"; \
 		echo "ℹ️  Edit $$notes"; \
-		echo "ℹ️  Drop release images or GIFs into $$img_dir"; \
+		echo "ℹ️  Drop release images, GIFs, or local video files into $$img_dir"; \
 		echo "ℹ️  Reference them in the markdown with ![alt](IMG:path/to/file.png)"; \
-		echo "ℹ️  That publishes as https://raw.githubusercontent.com/$(GH_REPO)/refs/tags/$$version/$(RELEASE_IMAGE_DIR)/$$version/path/to/file.png"; \
+		echo "ℹ️  For a manual video reminder, keep <!-- VIDEO:demo.mp4 --> in a markdown comment."; \
+		echo "ℹ️  IMG references publish from https://raw.githubusercontent.com/$(GH_REPO)/refs/heads/$(RELEASE_NOTES_BRANCH)/$(RELEASE_IMAGE_DIR)/$$version/path/to/file.png"; \
 		echo "ℹ️  Publish when ready: make release-gh VERSION=$$version"; \
 	else \
 		echo "ℹ️  Skipped release scaffold."; \
@@ -331,19 +333,20 @@ release-notes-init:
 	printf '%s\n' \
 		'# Release media for $(VERSION)' \
 		'' \
-		'Drop screenshots and GIFs for this release into this directory.' \
+		'Drop screenshots, GIFs, and any local video files for this release into this directory.' \
 		'' \
 		'Use markdown references like: ![demo](IMG:demo.png)' \
+		'For a manual video follow-up, keep this inside an HTML comment in the release notes: <!-- VIDEO:demo.mp4 -->' \
 		'' \
 		'Raw URL base after publish:' \
-		'https://raw.githubusercontent.com/$(GH_REPO)/refs/tags/$(VERSION)/$(RELEASE_IMAGE_DIR)/$(VERSION)/' \
+		'https://raw.githubusercontent.com/$(GH_REPO)/refs/heads/$(RELEASE_NOTES_BRANCH)/$(RELEASE_IMAGE_DIR)/$(VERSION)/' \
 		> "$$guide"; \
 	sed \
 		-e "s|__VERSION__|$(VERSION)|g" \
 		-e "s|__DATE__|$(shell date -u +%Y-%m-%d)|g" \
 		-e "s|__IMAGE_DIR__|$(RELEASE_IMAGE_DIR)/$(VERSION)|g" \
-		-e "s|__IMAGE_RAW_URL_BASE__|https://raw.githubusercontent.com/$(GH_REPO)/refs/tags/$(VERSION)/$(RELEASE_IMAGE_DIR)/$(VERSION)/|g" \
-		-e "s|__IMAGE_RAW_URL_EXAMPLE__|https://raw.githubusercontent.com/$(GH_REPO)/refs/tags/$(VERSION)/$(RELEASE_IMAGE_DIR)/$(VERSION)/demo.png|g" \
+		-e "s|__IMAGE_RAW_URL_BASE__|https://raw.githubusercontent.com/$(GH_REPO)/refs/heads/$(RELEASE_NOTES_BRANCH)/$(RELEASE_IMAGE_DIR)/$(VERSION)/|g" \
+		-e "s|__IMAGE_RAW_URL_EXAMPLE__|https://raw.githubusercontent.com/$(GH_REPO)/refs/heads/$(RELEASE_NOTES_BRANCH)/$(RELEASE_IMAGE_DIR)/$(VERSION)/demo.png|g" \
 		"$(RELEASE_NOTES_TEMPLATE)" > "$$target"; \
 	echo "✅ Created $$target"; \
 	echo "✅ Created $$img_dir"; \

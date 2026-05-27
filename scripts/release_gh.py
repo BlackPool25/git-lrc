@@ -20,8 +20,12 @@ from typing import Iterable, Optional, Tuple
 
 SEMVER_RE = re.compile(r"^v(\d+)\.(\d+)\.(\d+)$")
 IMAGE_REF_RE = re.compile(r"IMG:([^\s)]+)")
+VIDEO_REF_RE = re.compile(r"(?m)^[ \t]*<!--\s*VIDEO:([^\s>]+)\s*-->[ \t]*$")
 RELEASE_NOTES_DIR = pathlib.Path("docs") / "releases"
 RELEASE_IMAGE_DIR = RELEASE_NOTES_DIR / "img"
+RELEASE_NOTES_BRANCH = "main"
+ATTACH_FILES_DOC_URL = "https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/attaching-files"
+MANUAL_VIDEO_EXTENSIONS = {".mp4", ".mov", ".webm"}
 
 
 def run(cmd: Iterable[str], check: bool = True) -> str:
@@ -101,23 +105,49 @@ def release_image_dir(version: str) -> pathlib.Path:
     return RELEASE_IMAGE_DIR / version
 
 
-def normalize_image_ref(image_ref: str) -> pathlib.PurePosixPath:
-    candidate = pathlib.PurePosixPath(image_ref)
-    if not image_ref or candidate.is_absolute():
-        raise ValueError(f"invalid image reference 'IMG:{image_ref}'")
+def normalize_release_ref(raw_ref: str, prefix: str) -> pathlib.PurePosixPath:
+    candidate = pathlib.PurePosixPath(raw_ref)
+    if not raw_ref or candidate.is_absolute():
+        raise ValueError(f"invalid release reference '{prefix}:{raw_ref}'")
     if any(part in {"", ".", ".."} for part in candidate.parts):
-        raise ValueError(f"invalid image reference 'IMG:{image_ref}'")
+        raise ValueError(f"invalid release reference '{prefix}:{raw_ref}'")
     return candidate
 
 
 def raw_image_url(repo: str, version: str, image_ref: pathlib.PurePosixPath) -> str:
     return (
-        f"https://raw.githubusercontent.com/{repo}/refs/tags/{version}/"
+        f"https://raw.githubusercontent.com/{repo}/refs/heads/{RELEASE_NOTES_BRANCH}/"
         f"docs/releases/img/{version}/{image_ref.as_posix()}"
     )
 
 
-def render_release_notes(repo: str, version: str, notes_text: str) -> str:
+def release_page_url(repo: str, version: str) -> str:
+    return f"https://github.com/{repo}/releases/tag/{version}"
+
+
+def collect_manual_video_refs(version: str, notes_text: str) -> list[tuple[pathlib.PurePosixPath, pathlib.Path]]:
+    image_dir = release_image_dir(version)
+    manual_video_refs: list[tuple[pathlib.PurePosixPath, pathlib.Path]] = []
+    for match in VIDEO_REF_RE.finditer(notes_text):
+        video_ref = normalize_release_ref(match.group(1), "VIDEO")
+        if video_ref.suffix.lower() not in MANUAL_VIDEO_EXTENSIONS:
+            raise ValueError(
+                f"unsupported manual video placeholder 'VIDEO:{video_ref.as_posix()}'\n"
+                "   Fix: use a .mp4, .mov, or .webm file"
+            )
+        local_path = image_dir.joinpath(*video_ref.parts)
+        if not local_path.exists():
+            raise ValueError(
+                f"missing release video asset: {local_path}\n"
+                f"   Fix: add the file under {image_dir} or update the VIDEO placeholder"
+            )
+        if not local_path.is_file():
+            raise ValueError(f"release video reference must point to a file: {local_path}")
+        manual_video_refs.append((video_ref, local_path))
+    return manual_video_refs
+
+
+def render_release_notes(repo: str, version: str, notes_text: str) -> tuple[str, list[tuple[pathlib.PurePosixPath, pathlib.Path]]]:
     image_dir = release_image_dir(version)
     if not image_dir.is_dir():
         raise ValueError(
@@ -125,8 +155,10 @@ def render_release_notes(repo: str, version: str, notes_text: str) -> str:
             f"   Fix: make release-notes-init VERSION={version}"
         )
 
+    manual_video_refs = collect_manual_video_refs(version, notes_text)
+
     def replace(match: re.Match[str]) -> str:
-        image_ref = normalize_image_ref(match.group(1))
+        image_ref = normalize_release_ref(match.group(1), "IMG")
         local_path = image_dir.joinpath(*image_ref.parts)
         if not local_path.exists():
             raise ValueError(
@@ -143,10 +175,10 @@ def render_release_notes(repo: str, version: str, notes_text: str) -> str:
             "unresolved IMG: placeholder remains in release notes\n"
             "   Fix: use markdown like ![alt](IMG:path/to/file.png) with files under the release image directory"
         )
-    return rendered
+    return rendered, manual_video_refs
 
 
-def prepare_release_notes(repo: str, version: str) -> Tuple[pathlib.Path, str]:
+def prepare_release_notes(repo: str, version: str) -> Tuple[pathlib.Path, str, list[tuple[pathlib.PurePosixPath, pathlib.Path]]]:
     notes_file = release_notes_path(version)
     if not notes_file.exists() or notes_file.stat().st_size == 0:
         raise ValueError(
@@ -155,10 +187,10 @@ def prepare_release_notes(repo: str, version: str) -> Tuple[pathlib.Path, str]:
         )
 
     notes_text = notes_file.read_text(encoding="utf-8")
-    rendered_notes = render_release_notes(repo, version, notes_text)
+    rendered_notes, manual_video_refs = render_release_notes(repo, version, notes_text)
     if not rendered_notes.strip():
         raise ValueError(f"release notes render to empty content: {notes_file}")
-    return notes_file, rendered_notes
+    return notes_file, rendered_notes, manual_video_refs
 
 
 def ensure_local_tag(version: str) -> None:
@@ -272,7 +304,7 @@ def main() -> int:
         return 2
 
     try:
-        notes_file, rendered_notes = prepare_release_notes(args.repo, version)
+        notes_file, rendered_notes, manual_video_refs = prepare_release_notes(args.repo, version)
     except ValueError as exc:
         print(f"❌ {exc}")
         return 2
@@ -280,6 +312,8 @@ def main() -> int:
     if args.check_only:
         print(f"✅ Release notes validated: {notes_file}")
         print(f"✅ Release image directory validated: {release_image_dir(version)}")
+        if manual_video_refs:
+            print(f"✅ Manual video placeholders validated: {len(manual_video_refs)}")
         return 0
 
     rendered_notes_file: Optional[pathlib.Path] = None
@@ -299,6 +333,14 @@ def main() -> int:
 
     print(f"✅ Published GitHub release: {version}")
     print("ℹ️  SBOM generation+attachment will run from the release tag in CI.")
+    if manual_video_refs:
+        print("⚠️  Manual video follow-up required:")
+        for video_ref, local_path in manual_video_refs:
+            print(
+                f"   - Upload {video_ref.as_posix()} manually from {local_path} in the GitHub release editor"
+            )
+        print(f"   Release page: {release_page_url(args.repo, version)}")
+        print(f"   GitHub attachment help: {ATTACH_FILES_DOC_URL}")
     return 0
 
 
