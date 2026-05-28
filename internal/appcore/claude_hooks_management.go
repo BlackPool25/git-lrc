@@ -483,7 +483,7 @@ PY
 
 emit_allow_with_wrapper() {
   local reason="$1"
-  if ! REVIEW_REASON="$reason" CLAUDE_HELPER_PATH="$helper_path" CLAUDE_PROJECT_DIR_VALUE="$CLAUDE_PROJECT_DIR" python3 - "$payload_file" <<'PY'
+	if ! REVIEW_REASON="$reason" CLAUDE_HELPER_PATH="$helper_path" CLAUDE_PROJECT_DIR_VALUE="$CLAUDE_PROJECT_DIR" CLAUDE_HOOK_PWD_VALUE="$PWD" python3 - "$payload_file" <<'PY'
 import json
 import os
 import shlex
@@ -503,9 +503,27 @@ if not command:
 
 project_dir = os.environ["CLAUDE_PROJECT_DIR_VALUE"]
 helper_path = os.environ["CLAUDE_HELPER_PATH"]
+hook_pwd = os.environ.get("CLAUDE_HOOK_PWD_VALUE", "").strip()
+
+invocation_cwd = ""
+cwd_candidate = tool_input.get("cwd")
+if isinstance(cwd_candidate, str):
+	invocation_cwd = cwd_candidate.strip()
+
+if not invocation_cwd:
+	cwd_candidate = payload.get("cwd")
+	if isinstance(cwd_candidate, str):
+		invocation_cwd = cwd_candidate.strip()
+
+if not invocation_cwd:
+	invocation_cwd = hook_pwd
+
+if not invocation_cwd:
+	raise SystemExit(1)
 
 tool_input["command"] = " ".join([
-    f"LRC_CLAUDE_PROJECT_DIR={shlex.quote(project_dir)}",
+	f"LRC_CLAUDE_PROJECT_DIR={shlex.quote(project_dir)}",
+	f"LRC_CLAUDE_INVOCATION_CWD={shlex.quote(invocation_cwd)}",
     f"LRC_ORIGINAL_GIT_COMMIT={shlex.quote(command)}",
     shlex.quote(helper_path),
 ])
@@ -553,9 +571,14 @@ func generateGlobalClaudeWrapperScript() string {
 	return `#!/usr/bin/env bash
 set -euo pipefail
 
-project_dir="${LRC_CLAUDE_PROJECT_DIR:-$PWD}"
+invocation_cwd="${LRC_CLAUDE_INVOCATION_CWD:-}"
 original_command="${LRC_ORIGINAL_GIT_COMMIT:-}"
 blocking_timeout="${LRC_BLOCKING_REVIEW_TIMEOUT:-20m}"
+
+if [[ -z "$invocation_cwd" ]]; then
+	echo "LiveReview: missing invocation cwd for Claude wrapper" >&2
+	exit 1
+fi
 
 if [[ -z "$original_command" ]]; then
   echo "LiveReview: missing original git commit command for Claude wrapper" >&2
@@ -641,7 +664,7 @@ PY
   exit 1
 fi
 
-cd "$project_dir"
+cd "$invocation_cwd"
 
 git_dir="$(git rev-parse --git-dir 2>/dev/null || echo .git)"
 lrc_dir="$git_dir/lrc"

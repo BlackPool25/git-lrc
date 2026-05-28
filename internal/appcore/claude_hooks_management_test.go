@@ -143,6 +143,45 @@ func TestGenerateGlobalClaudeWrapperScriptAllowsMissingReviewModeVersionLine(t *
 	}
 }
 
+func TestGenerateGlobalClaudeValidatorScriptThreadsInvocationCWD(t *testing.T) {
+	script := generateGlobalClaudeValidatorScript()
+
+	for _, fragment := range []string{
+		`CLAUDE_HOOK_PWD_VALUE="$PWD"`,
+		`cwd_candidate = tool_input.get("cwd")`,
+		`cwd_candidate = payload.get("cwd")`,
+		`invocation_cwd = hook_pwd`,
+		`LRC_CLAUDE_INVOCATION_CWD={shlex.quote(invocation_cwd)}`,
+	} {
+		if !strings.Contains(script, fragment) {
+			t.Fatalf("expected validator script to contain %q", fragment)
+		}
+	}
+}
+
+func TestGenerateGlobalClaudeWrapperScriptUsesInvocationCWD(t *testing.T) {
+	script := generateGlobalClaudeWrapperScript()
+
+	for _, fragment := range []string{
+		`invocation_cwd="${LRC_CLAUDE_INVOCATION_CWD:-}"`,
+		`LiveReview: missing invocation cwd for Claude wrapper`,
+		`cd "$invocation_cwd"`,
+	} {
+		if !strings.Contains(script, fragment) {
+			t.Fatalf("expected wrapper script to contain %q", fragment)
+		}
+	}
+
+	for _, fragment := range []string{
+		`project_dir="${LRC_CLAUDE_PROJECT_DIR:-$PWD}"`,
+		`cd "$project_dir"`,
+	} {
+		if strings.Contains(script, fragment) {
+			t.Fatalf("did not expect wrapper script to contain %q", fragment)
+		}
+	}
+}
+
 func TestGenerateGlobalClaudeWrapperScriptExtractsHeredocCommitMessage(t *testing.T) {
 	script := generateGlobalClaudeWrapperScript()
 
