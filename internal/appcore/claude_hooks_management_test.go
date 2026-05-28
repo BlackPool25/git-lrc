@@ -159,6 +159,21 @@ func TestGenerateGlobalClaudeValidatorScriptThreadsInvocationCWD(t *testing.T) {
 	}
 }
 
+func TestGenerateGlobalClaudeValidatorScriptEscapesDenyReasonJSON(t *testing.T) {
+	script := generateGlobalClaudeValidatorScript()
+
+	for _, fragment := range []string{
+		`json_escape() {`,
+		`value=${value//\\/\\\\}`,
+		`value=${value//\"/\\\"}`,
+		`escaped_reason=$(json_escape "$reason")`,
+	} {
+		if !strings.Contains(script, fragment) {
+			t.Fatalf("expected validator script to contain %q", fragment)
+		}
+	}
+}
+
 func TestGenerateGlobalClaudeWrapperScriptUsesInvocationCWD(t *testing.T) {
 	script := generateGlobalClaudeWrapperScript()
 
