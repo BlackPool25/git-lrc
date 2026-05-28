@@ -1,5 +1,16 @@
 ## Contributing to git-lrc
 
+## TL;DR
+
+- Start with a Discussion if the work is not already agreed and clearly scoped.
+- Do not open direct PRs for unscoped work. The preferred flow is Discussion -> Issue -> PR.
+- Build locally with `make build-local && lrc hooks install`.
+- Run the most specific test that proves your change.
+- Keep storage and file operations in `storage/`, and keep network operations in `network/`.
+- If your change touches UI, a GIF or video walkthrough is required in the PR. This is a hard requirement.
+- If your change affects `storage/` or `network/`, update the matching status doc and run `make check-status-doc`.
+- By contributing, you agree to the Contributor License Agreement.
+
 The ideas behind git-lrc matter, but so does the way changes enter the project.
 
 This guide is here to help you contribute in a way that is clear, scoped, and easy to review.
@@ -125,17 +136,19 @@ A good pull request in git-lrc is:
 
 If your PR changes behavior, call that out directly.
 
-If your PR touches UI, include a short walkthrough of the working change.
+If your PR touches UI, you must include a GIF or video walkthrough of the working change.
 
 ## UI Changes Require a GIF or Video
 
-When your work changes the user interface, include a short GIF or video showing the change working.
+When your work changes the user interface, a GIF or video walkthrough is required.
 
 The walkthrough should make it easy for a reviewer to see:
 
 - what changed,
 - how the interaction behaves,
 - and that the change was actually exercised.
+
+PRs that change UI without this walkthrough are not complete.
 
 AI-assisted programming is fine, but UI changes still need to be tested and demonstrated clearly.
 
