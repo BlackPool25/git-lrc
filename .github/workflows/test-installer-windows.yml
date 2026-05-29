@@ -16,6 +16,7 @@ jobs:
         with:
           repository: HexmosTech/claude-lrc
           path: claude-lrc
+          token: ${{ secrets.CLAUDE_LRC_REPO_TOKEN || github.token }}
 
       - name: Set up Go
         uses: actions/setup-go@v5
