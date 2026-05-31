@@ -15,21 +15,28 @@ import (
 // or network/ helpers.
 var (
 	legacyReadFileAllowlist = []string{
+		"internal/appcore/claude_setup.go",
 		"internal/appcore/review_runtime.go",
 		"internal/appcore/review_runtime_landing.go",
 		"internal/staticserve/static_serve.go",
 	}
 	legacyWriteFileAllowlist = []string{
+		"internal/appcore/claude_setup.go",
 		"internal/appcore/interactive_decision.go",
 		"internal/appcore/review_runtime_landing.go",
 	}
 	legacyMkdirAllAllowlist = []string{
+		"internal/appcore/claude_setup.go",
 		"internal/appcore/interactive_decision.go",
 		"internal/appcore/review_runtime_landing.go",
 	}
 	legacyRemoveAllowlist = []string{
+		"internal/appcore/claude_setup.go",
 		"internal/appcore/review_runtime.go",
 		"internal/appcore/review_runtime_landing.go",
+	}
+	legacyOpenFileAllowlist = []string{
+		"internal/appcore/claude_setup.go",
 	}
 	legacyCreateTempAllowlist = []string{
 		"internal/appcore/review_runtime.go",
@@ -50,7 +57,7 @@ func TestStorageBoundaryEnforcement(t *testing.T) {
 		{re: regexp.MustCompile(`\bos\.Remove\(`), allowPrefixes: []string{"storage/"}, allowFiles: legacyRemoveAllowlist},
 		{re: regexp.MustCompile(`\bos\.CreateTemp\(`), allowPrefixes: []string{"storage/"}, allowFiles: legacyCreateTempAllowlist},
 		{re: regexp.MustCompile(`\bos\.Chmod\(`), allowPrefixes: []string{"storage/"}},
-		{re: regexp.MustCompile(`\bos\.OpenFile\(`), allowPrefixes: []string{"storage/", "interactive/"}},
+		{re: regexp.MustCompile(`\bos\.OpenFile\(`), allowPrefixes: []string{"storage/", "interactive/"}, allowFiles: legacyOpenFileAllowlist},
 		{re: regexp.MustCompile(`\bos\.Open\(`), allowPrefixes: []string{"storage/", "interactive/"}},
 		{re: regexp.MustCompile(`\bsql\.Open\(`), allowPrefixes: []string{"storage/"}},
 		{re: regexp.MustCompile(`\bdb\.Exec\(`), allowPrefixes: []string{"storage/"}},

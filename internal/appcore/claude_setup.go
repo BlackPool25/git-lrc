@@ -401,7 +401,7 @@ func runInternalClaudeSetupStatus(_ *cli.Context) error {
 	fmt.Println(string(data))
 
 	if tail := readLogTailStr(dir, 400); tail != "" {
-		fmt.Println("\n--- log tail ---\n")
+		fmt.Print("\n--- log tail ---\n")
 		fmt.Print(tail)
 	}
 	return nil
