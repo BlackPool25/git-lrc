@@ -1,6 +1,6 @@
 <div align="left">
 
-| [🇩🇰 Dansk](readme/README.da.md) | [🇪🇸 Español](readme/README.es.md) | [🇮🇷 Farsi](readme/README.fa.md) | [🇫🇮 Suomi](readme/README.fi.md) | [🇯🇵 日本語](readme/README.ja.md) | [🇳🇴 Norsk](readme/README.nn.md) | [🇵🇹 Português](readme/README.pt.md) | [🇷🇺 Русский](readme/README.ru.md) | [🇦🇱 Shqip](readme/README.sq.md) | [🇨🇳 中文](readme/README.zh.md) |
+| [🇩🇰 Dansk](readme/README.da.md) | [🇪🇸 Español](readme/README.es.md) | [🇮🇷 Farsi](readme/README.fa.md) | [🇫🇮 Suomi](readme/README.fi.md) | [🇯🇵 日本語](readme/README.ja.md) | [🇳🇴 Norsk](readme/README.nn.md) | [🇵🇹 Português](readme/README.pt.md) | [🇷🇺 Русский](readme/README.ru.md) | [🇦🇱 Shqip](readme/README.sq.md) | [🇨🇳 中文](readme/README.zh.md) | [🇮🇳 हिन्दी](readme/README.hi.md) | 
 
 <br />
 <br />
