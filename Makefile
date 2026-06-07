@@ -152,12 +152,16 @@ release: check-status-doc
 		echo "ℹ️  For a manual video reminder, keep <!-- VIDEO:demo.mp4 --> in a markdown comment."; \
 		echo "ℹ️  IMG references publish from https://raw.githubusercontent.com/$(GH_REPO)/refs/heads/$(RELEASE_NOTES_BRANCH)/$(RELEASE_IMAGE_DIR)/$$version/path/to/file.png"; \
 		echo "ℹ️  Publish when ready: make release-gh VERSION=$$version"; \
+		echo "ℹ️  commit and push"; \
+		echo "ℹ️  make release-gh"; \
 	else \
 		echo "ℹ️  Skipped release scaffold."; \
 		echo "   Create it later with: make release-notes-init VERSION=$$version"; \
 		echo "   Markdown path: $$notes"; \
 		echo "   Image directory: $$img_dir"; \
 		echo "   Publish when ready: make release-gh VERSION=$$version"; \
+		echo "   commit and push"; \
+		echo "   make release-gh"; \
 	fi
 
 # Build and upload an internal release of lrc using the same storage layout.

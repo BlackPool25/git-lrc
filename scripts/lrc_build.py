@@ -623,7 +623,7 @@ class LRCBuilder:
         
         self.log(f"\n✅ Version bumped to {new_version}", force=True)
         self.log(f"✅ Created and pushed tag {tag_name}", force=True)
-        self.log("Run 'make build-all' to build this version", force=True)
+        self.log("Run 'make release' to build and release this version", force=True)
 
     def cmd_release(self, args):
         """Build and upload to B2 (using hardcoded credentials)"""
