@@ -135,6 +135,28 @@ test('buildIssueFacetOptions narrows subcategories by the active main-category f
     );
 });
 
+test('buildIssueFacetOptions treats confidence and type filters as active by default', () => {
+    const options = buildIssueFacetOptions(buildFiles(), createDefaultIssueFilters(), new Set());
+
+    assert.deepEqual(
+        options.confidences.map((option) => [option.value, option.active]),
+        [
+            ['high', true],
+            ['medium', true],
+            ['low', true],
+        ],
+    );
+    assert.deepEqual(
+        options.types.map((option) => [option.value, option.active]),
+        [
+            ['best practice', true],
+            ['bug', true],
+            ['optimization', true],
+            ['risk', true],
+        ],
+    );
+});
+
 test('buildIssueCategoryGroups preserves the category to subcategory relationship visually', () => {
     const groups = buildIssueCategoryGroups(buildFiles(), normalizeIssueFilters({}), new Set());
 
@@ -173,6 +195,41 @@ test('buildIssueCategoryGroups keeps category order stable when a category becom
     );
 });
 
+test('buildIssueCategoryGroups treats all categories and subcategories as active by default', () => {
+    const groups = buildIssueCategoryGroups(buildFiles(), normalizeIssueFilters({}), new Set());
+
+    assert.deepEqual(
+        groups.map((group) => ({
+            label: group.label,
+            active: group.active,
+            subcategories: group.subcategories.map((subcategory) => ({
+                label: subcategory.label,
+                active: subcategory.active,
+            })),
+        })),
+        [
+            {
+                label: 'Documentation',
+                active: true,
+                subcategories: [
+                    { label: 'Broken Links', active: true },
+                    { label: 'Missing Prerequisites', active: true },
+                ],
+            },
+            {
+                label: 'Logic',
+                active: true,
+                subcategories: [{ label: 'Parser Mismatch', active: true }],
+            },
+            {
+                label: 'Style',
+                active: true,
+                subcategories: [{ label: 'String Processing', active: true }],
+            },
+        ],
+    );
+});
+
 test('toggleIssueFilterValue clears dependent subcategories when deselecting a main category', () => {
     const next = toggleIssueFilterValue(normalizeIssueFilters({
         categories: new Set(['documentation', 'logic']),
@@ -185,12 +242,43 @@ test('toggleIssueFilterValue clears dependent subcategories when deselecting a m
     assert.deepEqual([...next.subcategories].sort(), ['parser mismatch']);
 });
 
-test('toggleIssueFilterValue treats null category selection as implicit all-categories-selected', () => {
+test('toggleIssueFilterValue disables the clicked main category when all categories are currently selected', () => {
     const next = toggleIssueFilterValue(createDefaultIssueFilters(), 'category', 'documentation', {
         allValues: ['documentation', 'logic', 'style'],
+        childValues: ['broken links', 'missing prerequisites'],
+        allChildValues: ['broken links', 'missing prerequisites', 'parser mismatch', 'string processing'],
     });
 
     assert.deepEqual([...next.categories].sort(), ['logic', 'style']);
+    assert.deepEqual([...next.subcategories].sort(), ['parser mismatch', 'string processing']);
+});
+
+test('toggleIssueFilterValue re-enables a disabled main category together with its subcategories', () => {
+    const next = toggleIssueFilterValue(normalizeIssueFilters({
+        categories: new Set(['logic', 'style']),
+        subcategories: new Set(['parser mismatch', 'string processing']),
+    }), 'category', 'documentation', {
+        allValues: ['documentation', 'logic', 'style'],
+        childValues: ['broken links', 'missing prerequisites'],
+        allChildValues: ['broken links', 'missing prerequisites', 'parser mismatch', 'string processing'],
+    });
+
+    assert.equal(next.categories, null);
+    assert.equal(next.subcategories, null);
+});
+
+test('toggleIssueFilterValue toggles an individual subcategory off and back on', () => {
+    const disabled = toggleIssueFilterValue(createDefaultIssueFilters(), 'subcategory', 'broken links', {
+        allValues: ['broken links', 'missing prerequisites', 'parser mismatch', 'string processing'],
+    });
+
+    assert.deepEqual([...disabled.subcategories].sort(), ['missing prerequisites', 'parser mismatch', 'string processing']);
+
+    const reenabled = toggleIssueFilterValue(disabled, 'subcategory', 'broken links', {
+        allValues: ['broken links', 'missing prerequisites', 'parser mismatch', 'string processing'],
+    });
+
+    assert.equal(reenabled.subcategories, null);
 });
 
 test('countIssuesByFilters and countFileVisibleIssues exclude hidden comments from visible totals', () => {

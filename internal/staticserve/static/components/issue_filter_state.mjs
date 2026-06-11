@@ -45,7 +45,7 @@ function cloneSelectionSet(value) {
 }
 
 function normalizeSelectionSet(values, normalizer = normalizeFacetValue) {
-    if (!values) {
+    if (values == null) {
         return null;
     }
     const normalized = new Set();
@@ -55,7 +55,7 @@ function normalizeSelectionSet(values, normalizer = normalizeFacetValue) {
             normalized.add(next);
         }
     });
-    return normalized.size > 0 ? normalized : null;
+    return normalized;
 }
 
 function selectionMatches(selectionSet, normalizedValue) {
@@ -197,46 +197,63 @@ export function toggleIssueFilterValue(filters, field, rawValue, options = {}) {
             .map((entry) => field === 'severity' ? normalizeSeverity(entry) : normalizeFacetValue(entry))
             .filter(Boolean)
         : [];
+    const childValues = Array.isArray(options.childValues)
+        ? options.childValues.map((entry) => normalizeFacetValue(entry)).filter(Boolean)
+        : [];
+    const allChildValues = Array.isArray(options.allChildValues)
+        ? options.allChildValues.map((entry) => normalizeFacetValue(entry)).filter(Boolean)
+        : [];
     if (!value) {
         return next;
     }
+
+    const syncChildSelections = (enabled) => {
+        if (field !== 'category' || childValues.length === 0) {
+            return;
+        }
+
+        const currentChildren = cloneSelectionSet(next.subcategories);
+        if (enabled) {
+            if (!(currentChildren instanceof Set)) {
+                return;
+            }
+            childValues.forEach((childValue) => currentChildren.add(childValue));
+            next.subcategories = allChildValues.length > 0 && currentChildren.size === new Set(allChildValues).size
+                ? null
+                : currentChildren;
+            return;
+        }
+
+        if (!(currentChildren instanceof Set)) {
+            const nextChildren = new Set(allChildValues);
+            childValues.forEach((childValue) => nextChildren.delete(childValue));
+            next.subcategories = nextChildren;
+            return;
+        }
+
+        childValues.forEach((childValue) => currentChildren.delete(childValue));
+        next.subcategories = currentChildren;
+    };
 
     if (!(current instanceof Set)) {
         if (allValues.length > 0) {
             const nextSelection = new Set(allValues);
             nextSelection.delete(value);
-            next[selectionField] = nextSelection.size > 0 ? nextSelection : null;
-            if (field === 'category' && Array.isArray(options.childValues) && next.subcategories instanceof Set) {
-                const remainingSubcategories = new Set(next.subcategories);
-                options.childValues.forEach((childValue) => {
-                    const normalizedChildValue = normalizeFacetValue(childValue);
-                    if (normalizedChildValue) {
-                        remainingSubcategories.delete(normalizedChildValue);
-                    }
-                });
-                next.subcategories = remainingSubcategories.size > 0 ? remainingSubcategories : null;
-            }
+            next[selectionField] = nextSelection;
+            syncChildSelections(false);
             return next;
         }
 
-        next[selectionField] = new Set([value]);
+        next[selectionField] = new Set();
         return next;
     }
 
     if (current.has(value)) {
         current.delete(value);
-        if (field === 'category' && Array.isArray(options.childValues) && next.subcategories instanceof Set) {
-            const remainingSubcategories = new Set(next.subcategories);
-            options.childValues.forEach((childValue) => {
-                const normalizedChildValue = normalizeFacetValue(childValue);
-                if (normalizedChildValue) {
-                    remainingSubcategories.delete(normalizedChildValue);
-                }
-            });
-            next.subcategories = remainingSubcategories.size > 0 ? remainingSubcategories : null;
-        }
+        syncChildSelections(false);
     } else {
         current.add(value);
+        syncChildSelections(true);
     }
 
     if (allValues.length > 0 && current.size === allValues.length) {
@@ -407,19 +424,19 @@ export function buildIssueFacetOptions(files, filters, hiddenCommentKeys) {
         })),
         confidences: sortValues(optionMaps.confidence.keys(), CONFIDENCE_ORDER).map((value) => ({
             ...optionMaps.confidence.get(value),
-            active: normalized.confidences instanceof Set ? normalized.confidences.has(value) : false,
+            active: !(normalized.confidences instanceof Set) || normalized.confidences.has(value),
         })),
         types: sortValues(optionMaps.type.keys()).map((value) => ({
             ...optionMaps.type.get(value),
-            active: normalized.types instanceof Set ? normalized.types.has(value) : false,
+            active: !(normalized.types instanceof Set) || normalized.types.has(value),
         })),
         categories: sortValues(optionMaps.category.keys()).map((value) => ({
             ...optionMaps.category.get(value),
-            active: normalized.categories instanceof Set ? normalized.categories.has(value) : false,
+            active: !(normalized.categories instanceof Set) || normalized.categories.has(value),
         })),
         subcategories: sortValues(optionMaps.subcategory.keys()).map((value) => ({
             ...optionMaps.subcategory.get(value),
-            active: normalized.subcategories instanceof Set ? normalized.subcategories.has(value) : false,
+            active: !(normalized.subcategories instanceof Set) || normalized.subcategories.has(value),
         })),
     };
 }
@@ -442,22 +459,26 @@ export function buildIssueCategoryGroups(files, filters, hiddenCommentKeys) {
         }
 
         const categoryValue = normalizeFacetValue(shape.category);
+        const categoryIsActive = !(normalized.categories instanceof Set) || normalized.categories.has(categoryValue);
         const categoryEntry = categoryMap.get(categoryValue) || {
             value: categoryValue,
             label: shape.category,
             count: 0,
-            active: normalized.categories instanceof Set ? normalized.categories.has(categoryValue) : false,
+            active: categoryIsActive,
             subcategoryMap: new Map(),
         };
         categoryEntry.count += 1;
 
         if (shape.subcategory) {
             const subcategoryValue = normalizeFacetValue(shape.subcategory);
+            const subcategoryIsActive = categoryIsActive && (
+                !(normalized.subcategories instanceof Set) || normalized.subcategories.has(subcategoryValue)
+            );
             const subcategoryEntry = categoryEntry.subcategoryMap.get(subcategoryValue) || {
                 value: subcategoryValue,
                 label: shape.subcategory,
                 count: 0,
-                active: normalized.subcategories instanceof Set ? normalized.subcategories.has(subcategoryValue) : false,
+                active: subcategoryIsActive,
             };
             subcategoryEntry.count += 1;
             categoryEntry.subcategoryMap.set(subcategoryValue, subcategoryEntry);

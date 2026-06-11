@@ -1,4 +1,5 @@
 // Sidebar component
+import { renderIcon } from './icons.js';
 import { waitForPreact, filePathToId } from './utils.js';
 import { countFileVisibleIssues } from './issue_filter_state.mjs';
 
@@ -12,7 +13,10 @@ export async function createSidebar() {
         return html`
             <div class="sidebar">
                 <div class="sidebar-header">
-                    <h2>📂 FILES</h2>
+                    <h2>
+                        ${renderIcon(html, 'filesTab', { size: 12, className: 'btn-icon' })}
+                        Files
+                    </h2>
                     <div class="sidebar-stats">
                         ${totalFiles} file${totalFiles !== 1 ? 's' : ''} • ${totalComments} comment${totalComments !== 1 ? 's' : ''}
                     </div>

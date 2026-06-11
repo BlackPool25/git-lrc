@@ -1,4 +1,5 @@
 // Comment component
+import { renderIcon } from './icons.js';
 import { waitForPreact, getBadgeClass, copyToClipboard } from './utils.js';
 import { getFeedbackPopup } from './FeedbackPopup.js';
 
@@ -6,15 +7,15 @@ export async function createComment() {
     const { html, useEffect, useState } = await waitForPreact();
     const FeedbackPopup = await getFeedbackPopup();
 
-    const renderFact = (label, value, extraClass = '') => {
+    const renderMetaItem = (label, value, extraClass = '') => {
         if (!value) {
             return null;
         }
         return html`
-            <div class="comment-fact ${extraClass}">
-                <span class="comment-fact-label">${label}</span>
-                <span class="comment-fact-value">${value}</span>
-            </div>
+            <span class="comment-meta-item ${extraClass}">
+                <span class="comment-meta-label">${label}</span>
+                <span class="comment-meta-value">${value}</span>
+            </span>
         `;
     };
 
@@ -67,6 +68,13 @@ export async function createComment() {
         
         const badgeClass = getBadgeClass(comment.Severity);
         const lineLabel = comment.Line ? `:${comment.Line}` : '';
+        const metaItems = [
+            renderMetaItem('Confidence', comment.Confidence),
+            renderMetaItem('Type', comment.Type),
+            (comment.Category || comment.Subcategory)
+                ? renderMetaItem('Classification', `${comment.Category || 'Uncategorized'}${comment.Subcategory ? ` / ${comment.Subcategory}` : ''}`, 'comment-meta-item-classification')
+                : null,
+        ].filter(Boolean);
         
         return html`
             <tr class="comment-row ${isHidden ? 'comment-row-hidden' : ''}" data-line="${comment.Line}" id="${commentId}">
@@ -82,7 +90,7 @@ export async function createComment() {
                                             onClick=${handleToggleVisibility}
                                             style="position: static; opacity: 1;"
                                         >
-                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                                            ${renderIcon(html, 'showComment')}
                                             Show
                                         </button>
                                     </div>
@@ -126,16 +134,14 @@ export async function createComment() {
                                             title="Hide this comment from the AI Agent"
                                             onClick=${handleToggleVisibility}
                                         >
-                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-5 0-9.27-3.11-11-7.5a11.8 11.8 0 012.89-4.11M9.88 9.88a3 3 0 104.24 4.24"/><path d="M1 1l22 22"/></svg>
+                                            ${renderIcon(html, 'hideComment')}
                                         </button>
                                         <button 
                                             class="comment-copy-btn comment-action-icon-btn ${copied ? 'copied' : ''}"
                                             title="Copy issue details"
                                             onClick=${handleCopy}
                                         >
-                                            ${copied
-                                                ? html`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>`
-                                                : html`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round"/></svg>`}
+                                            ${renderIcon(html, copied ? 'copied' : 'copyLogs')}
                                         </button>
                                     </div>
                                     <div class="comment-header">
@@ -147,22 +153,14 @@ export async function createComment() {
                                             `}
                                         </div>
                                     </div>
-                                    <div class="comment-facts-row">
-                                        ${renderFact('Confidence', comment.Confidence)}
-                                        ${renderFact('Type', comment.Type)}
-                                        ${(comment.Category || comment.Subcategory) && html`
-                                            <div class="comment-fact comment-fact-classification">
-                                                <span class="comment-fact-label">Classification</span>
-                                                <span class="comment-fact-value">
-                                                    <span>${comment.Category || 'Uncategorized'}</span>
-                                                    ${comment.Subcategory && html`
-                                                        <span class="comment-fact-separator">/</span>
-                                                        <span class="comment-fact-subvalue">${comment.Subcategory}</span>
-                                                    `}
-                                                </span>
-                                            </div>
-                                        `}
-                                    </div>
+                                    ${metaItems.length > 0 && html`
+                                        <div class="comment-meta-line">
+                                            ${metaItems.map((item, index) => html`
+                                                ${item}
+                                                ${index < metaItems.length - 1 && html`<span class="comment-meta-divider">•</span>`}
+                                            `)}
+                                        </div>
+                                    `}
                                     <div class="comment-body">${comment.Content}</div>
                                 </div>
                             `

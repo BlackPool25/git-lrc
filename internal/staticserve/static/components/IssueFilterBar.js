@@ -1,6 +1,7 @@
 import { waitForPreact } from './utils.js';
 import { hasActiveIssueFilters } from './issue_filter_state.mjs';
 import { getFeedbackPopup } from './FeedbackPopup.js';
+import { renderIcon } from './icons.js';
 
 function renderFacetSection(html, title, field, options, onToggleFilter) {
     if (!options || options.length === 0) {
@@ -36,7 +37,7 @@ function renderCategoryTree(html, categoryGroups, onToggleFilter) {
             <span class="issue-filter-group-label">Classification</span>
             <div class="issue-category-tree">
                 ${categoryGroups.map((group) => html`
-                    <div class="issue-category-branch ${group.active ? 'active' : ''}">
+                    <div class="issue-category-branch ${group.active ? 'active' : ''} ${group.muted ? 'muted' : ''}">
                         <button
                             class="issue-filter-chip issue-category-chip ${group.active ? 'active' : ''}"
                             onClick=${() => onToggleFilter('category', group.value)}
@@ -49,7 +50,7 @@ function renderCategoryTree(html, categoryGroups, onToggleFilter) {
                             <div class="issue-subcategory-tree">
                                 ${group.subcategories.map((subcategory) => html`
                                     <button
-                                        class="issue-filter-subchip ${subcategory.active ? 'active' : ''}"
+                                        class="issue-filter-subchip ${subcategory.active ? 'active' : ''} ${subcategory.muted ? 'muted' : ''} ${subcategory.inheritedActive ? 'inherited-active' : ''}"
                                         onClick=${() => onToggleFilter('subcategory', subcategory.value)}
                                         title="Toggle subcategory ${subcategory.label}"
                                     >
@@ -151,12 +152,11 @@ export async function createIssueFilterBar() {
                                 onClick=${onCopyVisibleIssues}
                                 title="Copy all visible issues to clipboard"
                             >
-                                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                </svg>
+                                ${renderIcon(html, buttonLabel === 'Copied!' ? 'copied' : 'copyLogs')}
                                 ${buttonLabel}
                             </button>
                             <button class="btn btn-primary" onClick=${onSendToAgent} title="Send visible issues to Claude">
+                                ${renderIcon(html, 'sendToAgent')}
                                 Send to Claude (${visibleCount})
                             </button>
                             ${copyFeedbackMessage && html`
@@ -183,21 +183,6 @@ export async function createIssueFilterBar() {
                             `)}
                         </div>
                     </div>
-                    <div class="copy-visible-wrapper issue-filter-copy-actions issue-filter-copy-actions-secondary">
-                        <button
-                            class="btn btn-primary copy-visible-btn ${buttonState}"
-                            onClick=${onCopyVisibleIssues}
-                            title="Copy all visible issues to clipboard"
-                        >
-                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                            </svg>
-                            ${buttonLabel}
-                        </button>
-                        <button class="btn btn-primary" onClick=${onSendToAgent} title="Send visible issues to Claude">
-                            Send to Claude (${visibleCount})
-                        </button>
-                    </div>
                 </div>
                 <div class="issue-filter-details">
                     <div class="issue-filter-details-header">
@@ -206,11 +191,6 @@ export async function createIssueFilterBar() {
                             <span class="issue-filter-summary-text">${filterLabel}</span>
                             <span class="issue-filter-hint">Hover or open to browse all filter options</span>
                         </div>
-                        ${filterSummary && filterSummary.length > 0 && html`
-                            <div class="issue-filter-active-summary">
-                                ${filterSummary.map((item) => html`<span class="issue-filter-summary-pill">${item}</span>`)}
-                            </div>
-                        `}
                     </div>
                     <div class="issue-filter-groups">
                         ${renderFacetSection(html, 'Confidence', 'confidence', filterOptions?.confidences, onToggleFilter)}

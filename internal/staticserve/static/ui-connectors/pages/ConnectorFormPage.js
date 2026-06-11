@@ -1,3 +1,5 @@
+import { renderIcon } from '../../components/icons.js';
+
 const { html } = window.preact;
 
 export function ConnectorFormPage({
@@ -70,6 +72,7 @@ export function ConnectorFormPage({
               onInput=${(event) => onFieldChange('connector_name', event.target.value)}
             />
             <button class="secondary subtle-action" onClick=${onGenerateName} title="Generate a smart connector name">
+              ${renderIcon(html, 'refresh', { className: 'btn-icon' })}
               Regenerate
             </button>
           </div>
@@ -134,7 +137,7 @@ export function ConnectorFormPage({
                 <label>Available Models</label>
                 <div class="row">
                   <button class="secondary" disabled=${fetchModelsDisabled} onClick=${onFetchOllamaModels}>
-                    <span class="btn-icon" aria-hidden="true">◎</span>${fetchingModels ? 'Fetching...' : 'Fetch Models'}
+                    ${renderIcon(html, 'refresh', { className: `btn-icon ${fetchingModels ? 'ui-icon-spin' : ''}` })}${fetchingModels ? 'Fetching...' : 'Fetch Models'}
                   </button>
                 </div>
 
@@ -193,7 +196,7 @@ export function ConnectorFormPage({
                                 ? `${form.selected_model}${form.selected_model === apiDefaultModel ? ' (Recommended)' : ''}`
                                 : 'Select a model'}
                             </span>
-                            <span style="color: var(--text-muted, #858585); font-size: 10px; margin-left: 8px;">${isOpen ? '▲' : '▼'}</span>
+                            ${renderIcon(html, isOpen ? 'dropdownOpen' : 'dropdownClosed', { className: 'btn-icon', size: 12 })}
                           </button>
 
                           ${isOpen
@@ -295,10 +298,10 @@ export function ConnectorFormPage({
 
           <div class="row">
             <button disabled=${effectiveSaveDisabled} onClick=${onSave}>
-              <span class="btn-icon" aria-hidden="true">💾</span>${saving ? 'Saving...' : form.id ? 'Update' : 'Create'}
+              ${renderIcon(html, 'save', { className: 'btn-icon' })}${saving ? 'Saving...' : form.id ? 'Update' : 'Create'}
             </button>
             <button class="secondary" onClick=${onCancel}>
-              <span class="btn-icon" aria-hidden="true">↩</span>Cancel
+              ${renderIcon(html, 'cancel', { className: 'btn-icon' })}Cancel
             </button>
           </div>
 

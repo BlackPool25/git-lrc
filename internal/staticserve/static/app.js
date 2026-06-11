@@ -15,6 +15,7 @@ import { getIssueFilterBar } from './components/IssueFilterBar.js';
 import { getToolbar } from './components/Toolbar.js';
 import { getCommentNav } from './components/CommentNav.js';
 import { UsageBanner } from './components/UsageBanner.js';
+import { renderIcon } from './components/icons.js';
 import { getSummarySlideshow } from './components/SummarySlideshow/SummarySlideshow.js';
 import { evaluateSummarySlidesEligibility } from './components/SummarySlideshow/slideshowParser.js';
 import { buildPerformanceSnapshot, getFirstRenderTime, getLoadingActivityMessage, getPerformanceNow, recordFirstRenderTime } from './components/review_performance_state.mjs';
@@ -810,10 +811,7 @@ async function initApp() {
                 <div class="loading-screen">
                     <div class="loading-content">
                         <div class="loading-logo error">
-                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <circle cx="12" cy="12" r="10" />
-                                <path d="M12 8v4M12 16h.01" stroke-linecap="round" />
-                            </svg>
+                            ${renderIcon(html, 'handoffNotice', { size: 48 })}
                         </div>
                         <h1 class="loading-title">Session Ended</h1>
                         <p class="loading-text">This review session is no longer active.</p>
@@ -829,10 +827,7 @@ async function initApp() {
                 <div class="loading-screen">
                     <div class="loading-content">
                         <div class="loading-logo">
-                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <circle cx="12" cy="12" r="10" />
-                                <path d="M12 6v6l4 2" stroke-linecap="round" />
-                            </svg>
+                            ${renderIcon(html, 'refresh', { size: 48, className: 'ui-icon-spin' })}
                         </div>
                         <h1 class="loading-title">LiveReview</h1>
                         <div class="loading-spinner"></div>
@@ -848,10 +843,7 @@ async function initApp() {
                 <div class="loading-screen">
                     <div class="loading-content">
                         <div class="loading-logo error">
-                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <circle cx="12" cy="12" r="10" />
-                                <path d="M15 9l-6 6M9 9l6 6" stroke-linecap="round" />
-                            </svg>
+                            ${renderIcon(html, 'errorStatus', { size: 48 })}
                         </div>
                         <h1 class="loading-title">LiveReview</h1>
                         <h2 class="loading-error-title">Error Loading Review</h2>
@@ -871,12 +863,20 @@ async function initApp() {
             const matchingGroup = field === 'category'
                 ? allCategoryGroups.find((group) => group.value === String(value || '').trim().toLowerCase())
                 : null;
+            const allValuesByField = {
+                severity: (filterOptions?.severities || []).map((option) => option.value),
+                confidence: (filterOptions?.confidences || []).map((option) => option.value),
+                type: (filterOptions?.types || []).map((option) => option.value),
+                category: allCategoryGroups.map((group) => group.value),
+                subcategory: allCategoryGroups.flatMap((group) => group.subcategories.map((subcategory) => subcategory.value)),
+            };
 
             setIssueFilters((prev) => toggleIssueFilterValue(prev, field, value, {
-                allValues: field === 'category' ? allCategoryGroups.map((group) => group.value) : [],
+                allValues: allValuesByField[field] || [],
                 childValues: matchingGroup?.subcategories?.map((subcategory) => subcategory.value) || [],
+                allChildValues: allValuesByField.subcategory,
             }));
-        }, [allCategoryGroups]);
+        }, [allCategoryGroups, filterOptions]);
 
         const handleResetIssueFilters = useCallback(() => {
             setIssueFilters(resetIssueFilters());
@@ -968,7 +968,7 @@ async function initApp() {
             if (status === 'failed') {
                 return html`
                     <div class="status-container error">
-                        <span class="status-icon">❌</span>
+                        <span class="status-icon">${renderIcon(html, 'errorStatus', { size: 16 })}</span>
                         <span>Review completed with errors</span>
                     </div>
                 `;
@@ -976,7 +976,7 @@ async function initApp() {
             if (status === 'completed') {
                 return html`
                     <div class="status-container success">
-                        <span class="status-icon">✅</span>
+                        <span class="status-icon">${renderIcon(html, 'successStatus', { size: 16 })}</span>
                         <span>Review completed successfully</span>
                     </div>
                 `;
@@ -1116,14 +1116,10 @@ async function initApp() {
                                 ${handoffModal.type === 'success' 
                                     ? html`
                                         <div style="margin-bottom: 16px; color: #8b5cf6;">
-                                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <rect x="2" y="3" width="20" height="18" rx="2" ry="2"></rect>
-                                                <polyline points="6 8 10 12 6 16"></polyline>
-                                                <line x1="14" y1="16" x2="18" y2="16"></line>
-                                            </svg>
+                                            ${renderIcon(html, 'handoffSuccess', { size: 48 })}
                                         </div>
                                     `
-                                    : html`<div style="font-size: 48px; margin-bottom: 16px;">⚠️</div>`
+                                    : html`<div style="margin-bottom: 16px;">${renderIcon(html, 'handoffNotice', { size: 48 })}</div>`
                                 }
                                 <h3 style="margin: 0 0 12px 0; font-size: 20px; color: var(--text-primary);">
                                     ${handoffModal.type === 'success' ? 'Check Your Terminal' : 'Notice'}
