@@ -256,14 +256,17 @@ To configure:
 > Setup guide: [Using ClaudeAPI with git-lrc](https://claudeapi.com/en/blog/tools/git-lrc-claudeapi-setup-guide/?utm_source=git-lrc)
 
 ### Atlas Cloud Support
-
 We also support:
-- [Atlas Cloud](https://www.atlascloud.ai?utm_source=git-lrc) <img src="./gfx/atlas-cloud.png" width="20" height="20" alt="Atlas Cloud logo" />
+
+<img src="./gfx/atlas-cloud.png" width="88" height="46" alt="Atlas Cloud logo" />
+
+
+[Atlas Cloud](https://www.atlascloud.ai?utm_source=git-lrc) 
 
 To configure:
 - Select the option `Atlas Cloud` connector from the UI.
 - Enter your Atlas Cloud API key.
-- Select the model to use for reviews (e.g., `deepseek-ai/deepseek-v4-flash`).
+- Select the model to use for reviews (e.g., `deepseek-ai/deepseek-v4-flash`). 
 
 ## Security You Can Trust
 
