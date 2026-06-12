@@ -224,7 +224,7 @@ In addition to the default Gemini setup, you can bring your own API keys for:
 - Claude
 - DeepSeek
 - OpenRouter
-- Atlas Cloud
+- [Atlas Cloud](https://www.atlascloud.ai?utm_source=git-lrc)
 
 Use:
 
@@ -256,6 +256,9 @@ To configure:
 > Setup guide: [Using ClaudeAPI with git-lrc](https://claudeapi.com/en/blog/tools/git-lrc-claudeapi-setup-guide/?utm_source=git-lrc)
 
 ### Atlas Cloud Support
+
+We also support:
+- [Atlas Cloud](https://www.atlascloud.ai?utm_source=git-lrc) <img src="./gfx/atlas-cloud.png" width="20" height="20" alt="Atlas Cloud logo" />
 
 To configure:
 - Select the option `Atlas Cloud` connector from the UI.
