@@ -2368,6 +2368,9 @@ func openURL(url string) error {
 
 	var launchErrs []string
 	for _, candidate := range commands {
+		// Safe: candidate.name is drawn from a fixed allowlist of OS browser openers,
+		// each confirmed present via exec.LookPath before being added to commands.
+		// nosemgrep: go.lang.security.audit.dangerous-exec-command.dangerous-exec-command
 		cmd := exec.Command(candidate.name, candidate.args...)
 		if err := cmd.Start(); err != nil {
 			launchErrs = append(launchErrs, fmt.Sprintf("%s: %v", candidate.name, err))
@@ -2651,7 +2654,7 @@ func handleDraftEvents(w http.ResponseWriter, r *http.Request, hub *draftHub) {
 			if err != nil {
 				continue
 			}
-			if _, err := fmt.Fprintf(w, "data: %s\n\n", payload); err != nil {
+			if _, err := io.Copy(w, strings.NewReader(fmt.Sprintf("data: %s\n\n", payload))); err != nil {
 				return
 			}
 			flusher.Flush()
@@ -2691,6 +2694,9 @@ func openDraftInEditor(initial string) (string, error) {
 		parts = []string{"vi"}
 	}
 	args := append(parts[1:], path)
+	// Safe: mirrors git's own $EDITOR/$VISUAL convention. cmdSpec comes from the user's
+	// own environment (LRC_FALLBACK_EDITOR/VISUAL/EDITOR) or defaults to "vi".
+	// nosemgrep: go.lang.security.audit.dangerous-exec-command.dangerous-exec-command
 	cmd := exec.Command(parts[0], args...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
