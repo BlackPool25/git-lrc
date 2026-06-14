@@ -62,6 +62,25 @@ func TestBuildRulesBundle(t *testing.T) {
 	}
 }
 
+func TestBuildRulesBundleInstructionsFirst(t *testing.T) {
+	dir := t.TempDir()
+	lrcDir := filepath.Join(dir, ".lrc")
+
+	writeFile(t, filepath.Join(lrcDir, "rules", "README.md"), "should be excluded")
+	writeFile(t, filepath.Join(lrcDir, "rules", "design.md"), "Use hexagonal architecture.")
+	writeFile(t, filepath.Join(lrcDir, "rules", "INSTRUCTIONS.md"), "Read this first.")
+
+	text, _, issues := BuildRulesBundle(lrcDir)
+	if len(issues) != 0 {
+		t.Fatalf("unexpected issues: %v", issues)
+	}
+
+	want := "## rules/INSTRUCTIONS.md\n\nRead this first.\n\n## rules/design.md\n\nUse hexagonal architecture."
+	if text != want {
+		t.Fatalf("unexpected bundle text:\ngot:  %q\nwant: %q", text, want)
+	}
+}
+
 func TestBuildRulesBundleMissingRulesDir(t *testing.T) {
 	dir := t.TempDir()
 	lrcDir := filepath.Join(dir, ".lrc")
@@ -124,7 +143,7 @@ func TestValidateStructure(t *testing.T) {
 func TestValidateStructureComplete(t *testing.T) {
 	dir := t.TempDir()
 	lrcDir := filepath.Join(dir, ".lrc")
-	writeFile(t, filepath.Join(lrcDir, "rules", "README.md"), "doc")
+	writeFile(t, filepath.Join(lrcDir, "rules", "INSTRUCTIONS.md"), "")
 	writeFile(t, filepath.Join(lrcDir, "ignore"), "")
 
 	issues := ValidateStructure(lrcDir)
@@ -171,7 +190,7 @@ func TestInitCreatesScaffold(t *testing.T) {
 	wantFiles := []string{
 		".lrc/README.md",
 		".lrc/ignore",
-		".lrc/rules/README.md",
+		".lrc/rules/INSTRUCTIONS.md",
 		".lrc/rules/design.md",
 		".lrc/rules/security.md",
 		".lrc/rules/style.md",
@@ -232,7 +251,7 @@ func TestCollectZipExtras(t *testing.T) {
 	wantKeys := []string{
 		".lrc/README.md",
 		".lrc/ignore",
-		".lrc/rules/README.md",
+		".lrc/rules/INSTRUCTIONS.md",
 		".lrc/rules/design.md",
 		".lrc/rules/security.md",
 		".lrc/rules/style.md",

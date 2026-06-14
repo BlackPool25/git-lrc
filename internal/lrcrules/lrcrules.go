@@ -31,6 +31,7 @@ type Issue struct {
 }
 
 const rulesReadmeName = "README.md"
+const rulesInstructionsName = "INSTRUCTIONS.md"
 
 // Load returns the .lrc/ directory path under repoRoot. ok=false (with no
 // error) when .lrc/ does not exist.
@@ -49,11 +50,12 @@ func Load(repoRoot string) (lrcDir string, ok bool, err error) {
 	return dir, true, nil
 }
 
-// BuildRulesBundle concatenates .lrc/rules/*.md (lexicographic order),
-// excluding rules/README.md and skipping empty/whitespace-only files. Each
-// included file is preceded by a "## rules/<name>.md" header. Returns the
-// concatenated text, its character count, and an error-level Issue if the
-// result exceeds CharLimit.
+// BuildRulesBundle concatenates .lrc/rules/*.md, excluding rules/README.md
+// and skipping empty/whitespace-only files. rules/INSTRUCTIONS.md, if
+// present and non-empty, is placed first as the entry point; every other
+// file follows in lexicographic order. Each included file is preceded by a
+// "## rules/<name>.md" header. Returns the concatenated text, its character
+// count, and an error-level Issue if the result exceeds CharLimit.
 func BuildRulesBundle(lrcDir string) (string, int, []Issue) {
 	rulesDir := filepath.Join(lrcDir, "rules")
 	entries, err := os.ReadDir(rulesDir)
@@ -65,6 +67,7 @@ func BuildRulesBundle(lrcDir string) (string, int, []Issue) {
 	}
 
 	var names []string
+	hasInstructions := false
 	for _, e := range entries {
 		if e.IsDir() {
 			continue
@@ -76,9 +79,16 @@ func BuildRulesBundle(lrcDir string) (string, int, []Issue) {
 		if name == rulesReadmeName {
 			continue
 		}
+		if name == rulesInstructionsName {
+			hasInstructions = true
+			continue
+		}
 		names = append(names, name)
 	}
 	sort.Strings(names)
+	if hasInstructions {
+		names = append([]string{rulesInstructionsName}, names...)
+	}
 
 	var b strings.Builder
 	var issues []Issue
@@ -116,20 +126,14 @@ func BuildRulesBundle(lrcDir string) (string, int, []Issue) {
 }
 
 // ValidateStructure flags structural problems with .lrc/: a missing
-// rules/ directory, a missing rules/README.md entry-point doc, or a
-// missing ignore file. .lrc/ itself is optional, but once present it
-// should be well-formed.
+// rules/ directory or a missing ignore file. .lrc/ itself is optional, but
+// once present it should be well-formed.
 func ValidateStructure(lrcDir string) []Issue {
 	var issues []Issue
 
 	rulesDir := filepath.Join(lrcDir, "rules")
 	if info, err := os.Stat(rulesDir); err != nil || !info.IsDir() {
 		issues = append(issues, Issue{Level: "warning", Path: "rules", Message: "rules/ directory is missing"})
-	} else {
-		readmePath := filepath.Join(rulesDir, rulesReadmeName)
-		if _, err := os.Stat(readmePath); err != nil {
-			issues = append(issues, Issue{Level: "warning", Path: "rules/README.md", Message: "rules/README.md is missing"})
-		}
 	}
 
 	ignorePath := filepath.Join(lrcDir, "ignore")
