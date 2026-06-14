@@ -6,6 +6,34 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+// reviewCommandDescription documents the most common diff sources, including
+// how to review a feature branch before merging (PR-style review).
+const reviewCommandDescription = `By default, reviews staged changes (git diff --staged).
+
+Common diff sources:
+
+   lrc review                          # staged changes (default)
+   lrc review --staged=false           # working tree changes (unstaged)
+   lrc review --commit HEAD            # the most recent commit
+   lrc review --commit HEAD~3..HEAD    # the last 3 commits
+
+Reviewing a branch before merging (PR-style review):
+
+   lrc review --range main...my-feature
+
+   Three dots (...) compare against the merge base: you get exactly the
+   changes introduced by my-feature since it diverged from main, even if
+   main has moved on since. This is what GitHub/GitLab show in a PR diff,
+   and is almost always what you want.
+
+   Two dots (main..my-feature) is a direct diff between the two tips,
+   which also includes any commits already on main that my-feature
+   hasn't picked up yet.
+
+--range and --commit (with a "..." or ".." range) are read-only: they
+review a diff between existing refs, open a browsable HTML report, and
+do not write a commit attestation or offer to commit/push.`
+
 // Handlers contains injected command actions so CLI wiring can live outside main.
 type Handlers struct {
 	RunReviewSimple       cli.ActionFunc
@@ -100,17 +128,19 @@ func BuildApp(version, buildTime, gitCommit, reviewMode string, baseFlags, debug
 				Action: h.RunUninstall,
 			},
 			{
-				Name:    "review",
-				Aliases: []string{"r"},
-				Usage:   "Run a review with sensible defaults",
-				Flags:   baseFlags,
-				Action:  h.RunReviewSimple,
+				Name:        "review",
+				Aliases:     []string{"r"},
+				Usage:       "Run a review with sensible defaults",
+				Description: reviewCommandDescription,
+				Flags:       baseFlags,
+				Action:      h.RunReviewSimple,
 			},
 			{
-				Name:   "review-debug",
-				Usage:  "Run a review with advanced debug options",
-				Flags:  append(baseFlags, debugFlags...),
-				Action: h.RunReviewDebug,
+				Name:        "review-debug",
+				Usage:       "Run a review with advanced debug options",
+				Description: reviewCommandDescription,
+				Flags:       append(baseFlags, debugFlags...),
+				Action:      h.RunReviewDebug,
 			},
 			{
 				Name:  "hooks",

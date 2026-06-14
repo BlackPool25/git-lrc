@@ -139,8 +139,10 @@ func runReviewWithOptions(opts reviewopts.Options) error {
 
 	// Determine if this is a post-commit review (reviewing already-committed code, read-only)
 	// vs a pre-commit review (reviewing staged changes before commit, can commit from UI)
-	// When --commit flag is used, we're always reviewing historical commits (read-only mode)
-	isPostCommitReview := opts.DiffSource == "commit"
+	// When --commit or --range is used, we're always reviewing a diff between
+	// existing refs (read-only mode) — there's nothing in the working tree to
+	// commit, and no per-tree attestation applies.
+	isPostCommitReview := opts.DiffSource == "commit" || opts.DiffSource == "range"
 	useBlockingReview := opts.BlockingReview && !isPostCommitReview
 	deferCommit := opts.Precommit || useBlockingReview
 
