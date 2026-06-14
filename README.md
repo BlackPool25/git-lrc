@@ -268,6 +268,63 @@ To configure:
 - Enter your Atlas Cloud API key.
 - Select the model to use for reviews (e.g., `deepseek-ai/deepseek-v4-flash`). 
 
+## Repository Rules — Teaching the Reviewer About Your Repository
+
+A good reviewer doesn't just know your language and framework — it knows
+*your repository*: which patterns your team prefers, which dependencies are
+off-limits, and which shortcuts are fine here but wouldn't be elsewhere. Most
+of that knowledge never makes it into docs, which is why AI review can feel
+like feedback from a new hire.
+
+git-lrc lets you write that knowledge down once, in a `.lrc/` directory at
+the root of your repo, version-controlled like everything else:
+
+```bash
+lrc config init
+```
+
+```
+.lrc/
+├── README.md            # explains this setup
+├── ignore                # files/paths the reviewer should never see
+└── rules/
+    ├── INSTRUCTIONS.md   # read first — your most important guidance
+    ├── design.md
+    ├── security.md
+    └── style.md          # add as many *.md files as you need
+```
+
+- **`rules/*.md`** — short notes on how your team works, e.g. *"Prefer direct
+  SQL over ORM abstractions"* or *"Avoid new infrastructure dependencies."*
+  `INSTRUCTIONS.md` is read first; every other file follows in order. All of
+  it is combined into one set of instructions sent to the reviewer.
+- **`ignore`** — gitignore-style patterns for files the reviewer should skip
+  entirely (generated code, vendored files, etc.). Ignored files aren't sent
+  to the AI and don't count toward billable lines.
+- **`policy/`** — *(TODO, not yet enforced)* machine-readable settings, such
+  as which tools the reviewer is allowed to use.
+
+### Keep it short
+
+The `rules/` bundle is capped at 3000 characters. That's on purpose — a
+twenty-page style guide gets skimmed, by humans and AI alike. A handful of
+sentences that repeatedly change a review's outcome are worth far more than a
+full manual:
+
+- "Reliability matters more than latency."
+- "Prefer explicit implementations over abstraction layers."
+- "Avoid new infrastructure dependencies."
+- "Direct SQL is preferred over ORM abstractions."
+
+### Nothing hidden
+
+```bash
+lrc config check    # validate rules, ignore patterns, and bundle size — offline
+lrc config preview  # show the exact instructions that will be sent to the reviewer
+```
+
+If it's sent to the model, you can see it first.
+
 ## Security You Can Trust
 
 - Security is treated as a core product requirement in git-lrc.
