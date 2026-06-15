@@ -37,6 +37,8 @@ GenAI today is a **race car without brakes**. It accelerates fast -- you describ
 
 **`git-lrc` is your braking system.** It hooks into `git commit` and runs an AI review on every diff _before_ it lands. 60-second setup. Completely free.
 
+In short, git-lrc helps **Prevent Outages, Breaches, and Technical Debt Before They Happen**
+
 **At a glance:** [10 risk categories](#what-git-lrc-checks-for) &middot; [100+ failure patterns tracked](#what-git-lrc-checks-for) &middot; every commit scanned automatically.
 
 ```bash
