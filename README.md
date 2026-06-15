@@ -18,7 +18,7 @@
 
 
 
-<a href="https://www.producthunt.com/products/git-lrc?embed=true&amp;utm_source=badge-top-post-badge&amp;utm_medium=badge&amp;utm_campaign=badge-git-lrc" target="_blank" rel="noopener noreferrer"><img alt="git-lrc - Free, unlimited AI code reviews that run on commit | Product Hunt" width="200" src="https://api.producthunt.com/widgets/embed-image/v1/top-post-badge.svg?post_id=1079262&amp;theme=light&amp;period=daily&amp;t=1771749170868"></a>
+<a href="https://www.producthunt.com/products/git-lrc?embed=true&amp;utm_source=badge-top-post-badge&amp;utm_medium=badge&amp;utm_campaign=badge-git-lrc" target="_blank" rel="noopener noreferrer"><img alt="git-lrc - Free, micro AI code reviews that run on commit | Product Hunt" width="200" src="https://api.producthunt.com/widgets/embed-image/v1/top-post-badge.svg?post_id=1079262&amp;theme=light&amp;period=daily&amp;t=1771749170868"></a>
 &nbsp;
 
 <br />
@@ -137,7 +137,7 @@ Two steps, both open in your browser:
 
 ## Pricing
 
-Predictable, unlimited, LOC-based. 30k LOC free every month. Premium starts at $32 for 100k LOC. Paid plans keep you unlimited.
+Predictable, LOC-based. 30k LOC free every month. Premium starts at $32 for 100k LOC. No headcount based pricing, scales with workload.
 
 | Tier                  | What you get                                                  | Notes                                                          |
 | --------------------- | -------------------------------------------------------------- | ----------------------------------------------------------------- |
