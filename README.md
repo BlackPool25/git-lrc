@@ -12,7 +12,6 @@
 
 <h2>Free, Micro AI Code Reviews That Run on Commit</h2>
 
-![](./gfx/a_few_micro_reviews.png)
 
 <br />
 <br />
@@ -30,6 +29,8 @@
 
 <br />
 <br />
+
+![](./gfx/a_few_micro_reviews.png)
 
 ---
 
